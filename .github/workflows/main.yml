@@ -22,7 +22,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
@@ -136,7 +136,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
