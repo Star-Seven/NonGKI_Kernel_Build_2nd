@@ -4,7 +4,7 @@
   English | <a href="README_cn.md">中文说明</a> | <a href="Supported_list.md">Supported List</a> | <a href="https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd/wiki">Wiki</a> | <a href="https://t.me/+9XqfxcDtpkM2ZGE1">Telegram Group</a>
 </p>
 <p align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-release.yml?branch=mainline&style=for-the-badge"> <img alt="GitHub Downloads (all assets, latest release)" src="https://img.shields.io/github/downloads/JackA1ltman/NonGKI_Kernel_Build_2nd/latest/total?style=for-the-badge">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-samsung-s10-note10-series.yml?branch=mainline&style=for-the-badge">
  <img alt="GitHub License" src="https://img.shields.io/github/license/JackA1ltman/NonGKI_Kernel_Build_2nd?style=for-the-badge">
 </p>
 
@@ -14,8 +14,7 @@
 
 ### Introduction
 
-The initial goal of this project was to provide a relatively stable channel for compiling and updating **KernelSU** and **SuSFS** for a wider range of **Non-GKI** kernels.  
-It also aims to provide an easier compilation process using **GitHub Actions**, which not only makes it easier for us to maintain but also allows you to use our project to compile your own kernels.  
+This local streamlined version provides unified Non-GKI kernel builds for the Samsung **Galaxy S10 / Note10 series** only. The workflow checks out the default `bpf111` branch of [Star-Seven/M62-backport](https://github.com/Star-Seven/M62-backport) and runs its `build.sh --model all` flow for all nine supported devices: S10e, S10, S10+, S10 5G, Note10, Note10 5G, Note10+, Note10+ 5G (SM-N976B), and Note10+ 5G (SM-N976N). `d2xks` is only the SM-N976N device codename; it is not the sole build target.
 
 
 
@@ -36,25 +35,11 @@ It also aims to provide an easier compilation process using **GitHub Actions**, 
 
 ### Features
 
-- [x] **Architecture**
-  - [x] Unified submodules for updates.
-  - [x] Relatively independent variable calls.
-  - [x] Variables that don't require additional association.
-- [x] **Modules**
-  - [x] No need to modify submodules unless there are special requirements.
-  - [x] Submodules are easy to understand and learn from.
-- [x] **Ease of Use**
-  - [x] If you don't need SuSFS, you can compile directly after modifying only a few variables.
-  - [x] Easier to fill out and call patches after locally generating SuSFS patch files.
-  - [x] Multiple branches ensure it's easy to find example YAML files after forking.
-- [x] **System**
-  - [x] Supports Ubuntu 20.04-24.04.
-  - [x] Supports Arch Linux.
-  - [x] Supports compilation on X86_64.
-  - [ ] Supports compilation on ARM64.
-- [x] **Compilation**
-  - [x] Supports ARM64 kernels.
-  - [ ] Supports ARM (ARMV7A) kernels.(Aborted support.)
+- [x] **Two all-series variants:** one manual run builds a standard SuSFS kernel and a Droidspaces SuSFS kernel; each job covers all nine S10/Note10 devices.
+- [x] **Source alignment:** source and submodules always come from the default `bpf111` branch of `Star-Seven/M62-backport`.
+- [x] **Native unified packaging:** both jobs run the upstream `build.sh --model all` flow with Android 16 parameters and its unified image archive.
+- [x] **Kernel features:** the builds set up ReSukiSU, the SuSFS 2.2 backport, and manager query interfaces; the Droidspaces variant additionally applies upstream non-GKI patches and `droidspaces.config`.
+- [x] **Build environment:** GitHub Actions Ubuntu 24.04 with ARM64 cross-compilation.
 
 ---
 

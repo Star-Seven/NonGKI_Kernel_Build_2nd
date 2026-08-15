@@ -1,0 +1,224 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Original Kernel
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "⏰Set Time Zone to Beijing"
+        run: sudo timedatectl set-timezone "Asia/Shanghai"
+
+      - name: "🚄Set up build environment"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git-core flex bison build-essential zip curl patch \
+            zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
+
+      - name: "⭐Checkout build definitions"
+        uses: actions/checkout@v4
+
+      - name: "⭐Checkout M62-backport repository with submodules"
+        run: |
+          git clone --depth=1 --recurse-submodules \
+            https://github.com/Star-Seven/M62-backport.git kernel
+          cd kernel
+          git submodule update --init --recursive
+          echo "KERNEL_COMMIT=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      - name: "💡 Setup ReSukiSU and SuSFS"
+        working-directory: kernel
+        run: |
+          bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
+          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          ln -s ../KernelSU/kernel drivers/kernelsu
+          printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
+          sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+          patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
+          git clone --depth=1 --branch samsung_kernel \
+            https://github.com/JackA1ltman/NonGKI_Kernel_Patches.git NonGKI_Kernel_Patches
+          patch -p1 < NonGKI_Kernel_Patches/note10_plus_exyons9850/susfs_fixed.patch || true
+          if ! grep -q '<linux/susfs_def.h>' kernel/kallsyms.c; then
+            awk '
+              /^#ifdef CONFIG_KALLSYMS_ALL/ && !added {
+                print "#ifdef CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS"
+                print "#include <linux/susfs_def.h>"
+                print "#endif"
+                added = 1
+              }
+              { print }
+            ' kernel/kallsyms.c > kernel/kallsyms.c.new
+            mv kernel/kallsyms.c.new kernel/kallsyms.c
+          fi
+          bash "$GITHUB_WORKSPACE/Patches/susfs_inline_hook_patches.sh" ./
+          find . -type f -name '*.rej' -delete
+          if grep -qE 'ksu_handle_(newfstat_ret|fstat64_ret)' fs/stat.c; then
+            echo "Unexpected manual stat-return hook in SuSFS inline-hook build."
+            exit 1
+          fi
+          grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
+          grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          cat >> arch/arm64/configs/ksu.config <<'EOF'
+          CONFIG_KSU=y
+          CONFIG_KSU_SUSFS=y
+          CONFIG_KSU_SUSFS_SUS_PATH=y
+          CONFIG_KSU_SUSFS_SUS_MOUNT=y
+          CONFIG_KSU_SUSFS_SUS_KSTAT=y
+          CONFIG_KSU_SUSFS_SPOOF_UNAME=y
+          CONFIG_KSU_SUSFS_ENABLE_LOG=y
+          CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
+          CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
+          CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+          CONFIG_KSU_SUSFS_SUS_MAP=y
+          CONFIG_THREAD_INFO_IN_TASK=y
+          EOF
+
+      - name: "🧰Prepare source installer"
+        working-directory: kernel
+        run: |
+          test -f build/update-binary
+          sed -i '/^cp build\/updater-script /d' build.sh
+          ! grep -q '^cp build/updater-script ' build.sh
+
+      - name: "🐎Build Unified Kernel Package"
+        working-directory: kernel
+        run: |
+          chmod +x build.sh
+          ./build.sh -m all -k y -r n
+
+      - name: "💫Prepare Unified ZIP for upload"
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/upload"
+          cp kernel/build/out/*.zip "$GITHUB_WORKSPACE/upload/"
+          echo "=== Files in upload directory ==="
+          ls -la "$GITHUB_WORKSPACE/upload/"
+
+      - name: "😎Upload Unified ZIP as artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ExtremeKRNL-Unified-Package"
+          path: ${{ github.workspace }}/upload/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  build-droidspaces:
+    name: Build Droidspaces non-GKI Kernel
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "⏰Set Time Zone to Beijing"
+        run: sudo timedatectl set-timezone "Asia/Shanghai"
+
+      - name: "🚄Set up build environment"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git-core flex bison build-essential zip curl patch \
+            zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
+
+      - name: "⭐Checkout build definitions"
+        uses: actions/checkout@v4
+
+      - name: "⭐Checkout M62-backport repository with submodules"
+        run: |
+          git clone --depth=1 --recurse-submodules \
+            https://github.com/Star-Seven/M62-backport.git kernel
+          cd kernel
+          git submodule update --init --recursive
+          echo "KERNEL_COMMIT=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      - name: "💡 Setup ReSukiSU and SuSFS"
+        working-directory: kernel
+        run: |
+          bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
+          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          ln -s ../KernelSU/kernel drivers/kernelsu
+          printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
+          sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+          patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
+          git clone --depth=1 --branch samsung_kernel \
+            https://github.com/JackA1ltman/NonGKI_Kernel_Patches.git NonGKI_Kernel_Patches
+          patch -p1 < NonGKI_Kernel_Patches/note10_plus_exyons9850/susfs_fixed.patch || true
+          if ! grep -q '<linux/susfs_def.h>' kernel/kallsyms.c; then
+            awk '
+              /^#ifdef CONFIG_KALLSYMS_ALL/ && !added {
+                print "#ifdef CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS"
+                print "#include <linux/susfs_def.h>"
+                print "#endif"
+                added = 1
+              }
+              { print }
+            ' kernel/kallsyms.c > kernel/kallsyms.c.new
+            mv kernel/kallsyms.c.new kernel/kallsyms.c
+          fi
+          bash "$GITHUB_WORKSPACE/Patches/susfs_inline_hook_patches.sh" ./
+          find . -type f -name '*.rej' -delete
+          if grep -qE 'ksu_handle_(newfstat_ret|fstat64_ret)' fs/stat.c; then
+            echo "Unexpected manual stat-return hook in SuSFS inline-hook build."
+            exit 1
+          fi
+          grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
+          grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          cat >> arch/arm64/configs/ksu.config <<'EOF'
+          CONFIG_KSU=y
+          CONFIG_KSU_SUSFS=y
+          CONFIG_KSU_SUSFS_SUS_PATH=y
+          CONFIG_KSU_SUSFS_SUS_MOUNT=y
+          CONFIG_KSU_SUSFS_SUS_KSTAT=y
+          CONFIG_KSU_SUSFS_SPOOF_UNAME=y
+          CONFIG_KSU_SUSFS_ENABLE_LOG=y
+          CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
+          CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
+          CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+          CONFIG_KSU_SUSFS_SUS_MAP=y
+          CONFIG_THREAD_INFO_IN_TASK=y
+          EOF
+
+      - name: "🩹Apply compatible Droidspaces non-GKI patches"
+        working-directory: kernel
+        run: |
+          git clone --depth=1 https://github.com/Star-Seven/Droidspaces-OSS.git droidspaces
+          PATCH_DIR="droidspaces/Documentation/resources/kernel-patches/non-GKI"
+          if [ -f net/netfilter/xt_qtaguid.c ]; then
+            patch -p1 < "$PATCH_DIR/01.fix_kernel_panic_in_xt_qtaguid.patch"
+          else
+            echo "Skipping patch 01: net/netfilter/xt_qtaguid.c is absent in this kernel tree."
+          fi
+          test -f kernel/cgroup/cgroup.c
+          patch -p1 < "$PATCH_DIR/02.fix_restore cgroup file prefix handling .patch"
+
+      - name: "⚙️Enable Droidspaces configuration"
+        working-directory: kernel
+        run: |
+          sed -i 's/\$REF_CONF \$KSU_CONFIG \$RECOVERY_CONFIG/\$REF_CONF droidspaces.config \$KSU_CONFIG \$RECOVERY_CONFIG/' build.sh
+          grep -q 'droidspaces.config' build.sh
+
+      - name: "🧰Prepare source installer"
+        working-directory: kernel
+        run: |
+          test -f build/update-binary
+          sed -i '/^cp build\/updater-script /d' build.sh
+          ! grep -q '^cp build/updater-script ' build.sh
+
+      - name: "🐎Build Droidspaces Kernel Package"
+        working-directory: kernel
+        run: |
+          chmod +x build.sh
+          ./build.sh -m all -k y -r n
+
+      - name: "💫Prepare Droidspaces ZIP for upload"
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/upload"
+          cp kernel/build/out/*.zip "$GITHUB_WORKSPACE/upload/"
+          echo "=== Files in upload directory ==="
+          ls -la "$GITHUB_WORKSPACE/upload/"
+
+      - name: "😎Upload Droidspaces ZIP as artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ExtremeKRNL-Droidspaces-non-GKI-Package"
+          path: ${{ github.workspace }}/upload/*.zip
+          if-no-files-found: error
+          retention-days: 14

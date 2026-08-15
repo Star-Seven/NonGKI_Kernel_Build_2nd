@@ -4,7 +4,7 @@
   <a href="README.md">English</a> | 中文说明 | <a href="Supported_list.md">支持列表</a> | <a href="https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd/wiki">Wiki</a> | <a href="https://t.me/+9XqfxcDtpkM2ZGE1">Telegram 群组</a>
 </p>
 <p align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-release.yml?branch=mainline&style=for-the-badge"> <img alt="GitHub Downloads (all assets, latest release)" src="https://img.shields.io/github/downloads/JackA1ltman/NonGKI_Kernel_Build_2nd/latest/total?style=for-the-badge">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-samsung-s10-note10-series.yml?branch=mainline&style=for-the-badge">
  <img alt="GitHub License" src="https://img.shields.io/github/license/JackA1ltman/NonGKI_Kernel_Build_2nd?style=for-the-badge">
 </p>
 
@@ -13,8 +13,7 @@
 > **获取示例：[sample](https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd/tree/sample)**  
 
 ### 简介  
-本项目建立之初，目标就是为了更多**Non-GKI内核**提供相对稳定的**KernelSU**以及**SuSFS**的编译更新渠道  
-同时提供更轻松的基于**Github Action**的编译渠道，不仅仅是便于我们维护，也便于您利用我们的项目编译属于自己的内核  
+本地精简版本仅为三星 **Galaxy S10 / Note10 系列**提供统一的 Non-GKI 内核构建流程。工作流从 [Star-Seven/M62-backport](https://github.com/Star-Seven/M62-backport) 的默认 `bpf111` 分支拉取源码，并沿用该仓库的 `build.sh --model all` 为全部九个受支持设备生成统一刷机包：S10e、S10、S10+、S10 5G、Note10、Note10 5G、Note10+、Note10+ 5G（SM-N976B）和 Note10+ 5G（SM-N976N）。其中 `d2xks` 仅对应 SM-N976N，是全系列中的一个设备代号，并非唯一构建目标。
 
 > [!IMPORTANT]
 >我们基于[GPLv3协议](LICENSE)  
@@ -33,25 +32,11 @@
 
 ### 特性
 
-- [x] **架构**
-    - [x] 统一更新的子模块
-    - [x] 相对独立的变量调用
-    - [x] 不需要额外关联的变量
-- [x] **模块**
-    - [x] 无特殊需求无需修改子模块
-    - [x] 便于理解和学习的子模块
-- [x] **易用**
-    - [x] 若无SuSFS需求在仅修改部分变量后就可以直接进行编译
-    - [x] 本地生成SuSFS修补补丁后更容易的填写和调用补丁
-    - [x] 多分支保证Fork后不再难以寻找示例YAML
-- [x] **系统**
-    - [x] 支持Ubuntu 20.04-24.04
-    - [x] 支持Arch Linux
-    - [x] 支持在X86_64下编译
-    - [ ] 支持在ARM64下编译
-- [x] **编译**
-    - [x] 支持ARM64内核
-    - [ ] 支持ARM(ARMV7A)内核（已放弃支持）
+- [x] **全系列双变体**：一次手动触发分别构建标准 SuSFS 内核与 Droidspaces SuSFS 内核；每个作业均覆盖全部九个 S10/Note10 设备。
+- [x] **源码固定**：始终从 `Star-Seven/M62-backport` 的默认 `bpf111` 分支检出源码与子模块。
+- [x] **原生统一打包**：两个作业均通过上游 `build.sh --model all` 使用 Android 16 参数和统一镜像归档生成安装 ZIP。
+- [x] **内核功能**：构建时接入 ReSukiSU、SuSFS 2.2 后移植与管理器查询接口；Droidspaces 作业额外应用上游 non-GKI 补丁和 `droidspaces.config`。
+- [x] **运行环境**：GitHub Actions Ubuntu 24.04，ARM64 内核交叉编译。
     
 ---
 
