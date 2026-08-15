@@ -109,7 +109,6 @@ jobs:
           KERNEL_VERSION=${KERNEL_VERSION}
           SUSFS_VERSION=${SUSFS_VERSION}
           KSU_VERSION=${KSU_VERSION}
-          VARIANT=Standard SuSFS
           EOF
 
       - name: "😎Upload Unified ZIP as artifact"
@@ -243,7 +242,6 @@ jobs:
           KERNEL_VERSION=${KERNEL_VERSION}
           SUSFS_VERSION=${SUSFS_VERSION}
           KSU_VERSION=${KSU_VERSION}
-          VARIANT=Droidspaces non-GKI SuSFS
           EOF
 
       - name: "😎Upload Droidspaces ZIP as artifact"
