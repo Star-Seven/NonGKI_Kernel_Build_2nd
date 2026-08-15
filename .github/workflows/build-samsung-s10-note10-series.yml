@@ -3,6 +3,9 @@ name: Build and Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Original Kernel
@@ -92,15 +95,30 @@ jobs:
       - name: "💫Prepare Unified ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
-          cp kernel/build/out/*.zip "$GITHUB_WORKSPACE/upload/"
+          cp kernel/build/*.zip "$GITHUB_WORKSPACE/upload/"
           echo "=== Files in upload directory ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
+
+      - name: "📝Prepare release metadata"
+        run: |
+          KERNEL_VERSION=$(grep -o 'CONFIG_LOCALVERSION="[^"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2)
+          SUSFS_VERSION=$(grep -o 'SUSFS_VERSION "[^"]*"' kernel/include/linux/susfs.h | cut -d '"' -f 2)
+          KSU_VERSION=$(git -C kernel/KernelSU describe --tags --always --dirty)
+          cat > "$GITHUB_WORKSPACE/upload/release-metadata-standard.env" <<EOF
+          M62_COMMIT=${KERNEL_COMMIT}
+          KERNEL_VERSION=${KERNEL_VERSION}
+          SUSFS_VERSION=${SUSFS_VERSION}
+          KSU_VERSION=${KSU_VERSION}
+          VARIANT=Standard SuSFS
+          EOF
 
       - name: "😎Upload Unified ZIP as artifact"
         uses: actions/upload-artifact@v4
         with:
           name: "ExtremeKRNL-Unified-Package"
-          path: ${{ github.workspace }}/upload/*.zip
+          path: |
+            ${{ github.workspace }}/upload/*.zip
+            ${{ github.workspace }}/upload/release-metadata-standard.env
           if-no-files-found: error
           retention-days: 14
 
@@ -211,14 +229,79 @@ jobs:
       - name: "💫Prepare Droidspaces ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
-          cp kernel/build/out/*.zip "$GITHUB_WORKSPACE/upload/"
+          cp kernel/build/*.zip "$GITHUB_WORKSPACE/upload/"
           echo "=== Files in upload directory ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
+
+      - name: "📝Prepare release metadata"
+        run: |
+          KERNEL_VERSION=$(grep -o 'CONFIG_LOCALVERSION="[^"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2)
+          SUSFS_VERSION=$(grep -o 'SUSFS_VERSION "[^"]*"' kernel/include/linux/susfs.h | cut -d '"' -f 2)
+          KSU_VERSION=$(git -C kernel/KernelSU describe --tags --always --dirty)
+          cat > "$GITHUB_WORKSPACE/upload/release-metadata-droidspaces.env" <<EOF
+          M62_COMMIT=${KERNEL_COMMIT}
+          KERNEL_VERSION=${KERNEL_VERSION}
+          SUSFS_VERSION=${SUSFS_VERSION}
+          KSU_VERSION=${KSU_VERSION}
+          VARIANT=Droidspaces non-GKI SuSFS
+          EOF
 
       - name: "😎Upload Droidspaces ZIP as artifact"
         uses: actions/upload-artifact@v4
         with:
           name: "ExtremeKRNL-Droidspaces-non-GKI-Package"
-          path: ${{ github.workspace }}/upload/*.zip
+          path: |
+            ${{ github.workspace }}/upload/*.zip
+            ${{ github.workspace }}/upload/release-metadata-droidspaces.env
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-24.04
+    needs: [build, build-droidspaces]
+    steps:
+      - name: "💫Download kernel packages"
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: "📝Generate release notes"
+        id: metadata
+        run: |
+          METADATA_FILE=$(find release-assets -name 'release-metadata-standard.env' -print -quit)
+          test -n "$METADATA_FILE"
+          set -a
+          . "$METADATA_FILE"
+          set +a
+          TAG_KSU_VERSION=$(printf '%s' "$KSU_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
+          TAG_SUSFS_VERSION=$(printf '%s' "$SUSFS_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
+          RELEASE_TAG="m62-${M62_COMMIT}-susfs-${TAG_SUSFS_VERSION}-ksu-${TAG_KSU_VERSION}-${GITHUB_RUN_NUMBER}"
+          echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "name=M62 ${KERNEL_VERSION} · SuSFS ${SUSFS_VERSION}" >> "$GITHUB_OUTPUT"
+          cat > release-notes.md <<EOF
+          ## Galaxy S10 / Note10 Series
+
+          M62 bpf111 · ${KERNEL_VERSION}
+
+          - ReSukiSU: ${KSU_VERSION}
+          - SuSFS: ${SUSFS_VERSION} (4.14 inline backport)
+          - Source revision: ${M62_COMMIT}
+
+          ### Downloads
+
+          - **ExtremeKRNL-Unified-Package** — Standard SuSFS kernel
+          - **ExtremeKRNL-Droidspaces-non-GKI-Package** — Droidspaces-enabled non-GKI kernel
+
+          Both packages support S10e, S10, S10+, S10 5G, Note10, Note10 5G, Note10+ and Note10+ 5G. Confirm your device model before flashing.
+          EOF
+          find release-assets -type f -name '*.zip' -print
+
+      - name: "🚀Create GitHub Release"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.metadata.outputs.tag }}
+          name: ${{ steps.metadata.outputs.name }}
+          body_path: release-notes.md
+          files: release-assets/**/*.zip
+          fail_on_unmatched_files: true
