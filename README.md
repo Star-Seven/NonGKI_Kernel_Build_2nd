@@ -38,7 +38,7 @@ This local streamlined version provides unified Non-GKI kernel builds for the Sa
 - [x] **Two all-series variants:** one manual run builds a standard SuSFS kernel and a Droidspaces SuSFS kernel; each job covers all nine S10/Note10 devices.
 - [x] **Source alignment:** source and submodules always come from the default `bpf111` branch of `Star-Seven/M62-backport`.
 - [x] **Native unified packaging:** both jobs run the upstream `build.sh --model all` flow with Android 16 parameters and its unified image archive.
-- [x] **Kernel features:** the builds set up ReSukiSU, the SuSFS 2.2 backport, and manager query interfaces; the Droidspaces variant additionally applies upstream non-GKI patches and `droidspaces.config`.
+- [x] **Kernel features:** the builds set up ReSukiSU, the SuSFS 2.2 backport, and manager query interfaces; ReSukiSU's built-in multi-manager signature compatibility allows Official KernelSU, RKSU, MKSU, and SukiSU-Ultra managers to coexist in one kernel; the Droidspaces variant additionally applies upstream non-GKI patches and `droidspaces.config`.
 - [x] **Build environment:** GitHub Actions Ubuntu 24.04 with ARM64 cross-compilation.
 
 ---
