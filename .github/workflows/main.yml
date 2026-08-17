@@ -36,7 +36,7 @@ jobs:
         working-directory: kernel
         run: |
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
-          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
           ln -s ../KernelSU/kernel drivers/kernelsu
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
@@ -92,29 +92,35 @@ jobs:
           chmod +x build.sh
           ./build.sh -m all -k y -r n
 
-      - name: "💫Prepare Unified ZIP for upload"
+      - name: "💫Prepare Standard SuSFS ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
-          cp kernel/build/*.zip "$GITHUB_WORKSPACE/upload/"
-          echo "=== Files in upload directory ==="
+          for package in kernel/build/*.zip; do
+            test -f "$package"
+            base=$(basename "${package%.zip}")
+            cp "$package" "$GITHUB_WORKSPACE/upload/${base}-Standard-SuSFS.zip"
+          done
+          echo "=== Standard SuSFS package ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
 
       - name: "📝Prepare release metadata"
         run: |
           KERNEL_VERSION=$(grep -o 'CONFIG_LOCALVERSION="[^"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2)
           SUSFS_VERSION=$(grep -o 'SUSFS_VERSION "[^"]*"' kernel/include/linux/susfs.h | cut -d '"' -f 2)
-          KSU_VERSION=$(git -C kernel/KernelSU describe --tags --always --dirty)
+          KSU_RESUKISU_VERSION=$(expr $(git -C kernel/KernelSU rev-list --count HEAD) + 10200)
+          KSU_RESUKISU_COMMIT=$(git -C kernel/KernelSU rev-parse --short HEAD)
           cat > "$GITHUB_WORKSPACE/upload/release-metadata-standard.env" <<EOF
           M62_COMMIT=${KERNEL_COMMIT}
           KERNEL_VERSION=${KERNEL_VERSION}
           SUSFS_VERSION=${SUSFS_VERSION}
-          KSU_VERSION=${KSU_VERSION}
+          KSU_RESUKISU_VERSION=${KSU_RESUKISU_VERSION}
+          KSU_RESUKISU_COMMIT=${KSU_RESUKISU_COMMIT}
           EOF
 
       - name: "😎Upload Unified ZIP as artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: "ExtremeKRNL-Unified-Package"
+          name: "M62-S10-Note10-Standard-SuSFS"
           path: |
             ${{ github.workspace }}/upload/*.zip
             ${{ github.workspace }}/upload/release-metadata-standard.env
@@ -150,7 +156,7 @@ jobs:
         working-directory: kernel
         run: |
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
-          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
           ln -s ../KernelSU/kernel drivers/kernelsu
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
@@ -225,29 +231,35 @@ jobs:
           chmod +x build.sh
           ./build.sh -m all -k y -r n
 
-      - name: "💫Prepare Droidspaces ZIP for upload"
+      - name: "💫Prepare Droidspaces SuSFS ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
-          cp kernel/build/*.zip "$GITHUB_WORKSPACE/upload/"
-          echo "=== Files in upload directory ==="
+          for package in kernel/build/*.zip; do
+            test -f "$package"
+            base=$(basename "${package%.zip}")
+            cp "$package" "$GITHUB_WORKSPACE/upload/${base}-Droidspaces-SuSFS.zip"
+          done
+          echo "=== Droidspaces SuSFS package ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
 
       - name: "📝Prepare release metadata"
         run: |
           KERNEL_VERSION=$(grep -o 'CONFIG_LOCALVERSION="[^"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2)
           SUSFS_VERSION=$(grep -o 'SUSFS_VERSION "[^"]*"' kernel/include/linux/susfs.h | cut -d '"' -f 2)
-          KSU_VERSION=$(git -C kernel/KernelSU describe --tags --always --dirty)
+          KSU_RESUKISU_VERSION=$(expr $(git -C kernel/KernelSU rev-list --count HEAD) + 10200)
+          KSU_RESUKISU_COMMIT=$(git -C kernel/KernelSU rev-parse --short HEAD)
           cat > "$GITHUB_WORKSPACE/upload/release-metadata-droidspaces.env" <<EOF
           M62_COMMIT=${KERNEL_COMMIT}
           KERNEL_VERSION=${KERNEL_VERSION}
           SUSFS_VERSION=${SUSFS_VERSION}
-          KSU_VERSION=${KSU_VERSION}
+          KSU_RESUKISU_VERSION=${KSU_RESUKISU_VERSION}
+          KSU_RESUKISU_COMMIT=${KSU_RESUKISU_COMMIT}
           EOF
 
       - name: "😎Upload Droidspaces ZIP as artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: "ExtremeKRNL-Droidspaces-non-GKI-Package"
+          name: "M62-S10-Note10-Droidspaces-SuSFS"
           path: |
             ${{ github.workspace }}/upload/*.zip
             ${{ github.workspace }}/upload/release-metadata-droidspaces.env
@@ -272,26 +284,31 @@ jobs:
           set -a
           . "$METADATA_FILE"
           set +a
-          TAG_KSU_VERSION=$(printf '%s' "$KSU_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
+          TAG_KSU_VERSION=$(printf '%s' "$KSU_RESUKISU_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
           TAG_SUSFS_VERSION=$(printf '%s' "$SUSFS_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
-          RELEASE_TAG="m62-${M62_COMMIT}-susfs-${TAG_SUSFS_VERSION}-ksu-${TAG_KSU_VERSION}-${GITHUB_RUN_NUMBER}"
+          RELEASE_TAG="m62-${M62_COMMIT}-susfs-${TAG_SUSFS_VERSION}-resukisu-${TAG_KSU_VERSION}-${GITHUB_RUN_NUMBER}"
           echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "name=M62 ${KERNEL_VERSION} · SuSFS ${SUSFS_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "name=M62 ${KERNEL_VERSION} · SuSFS ${SUSFS_VERSION} · ReSukiSU ${KSU_RESUKISU_VERSION}" >> "$GITHUB_OUTPUT"
           cat > release-notes.md <<EOF
           ## Galaxy S10 / Note10 Series
 
           M62 bpf111 · ${KERNEL_VERSION}
 
-          - ReSukiSU: ${KSU_VERSION}
-          - SuSFS: ${SUSFS_VERSION} (4.14 inline backport)
-          - Source revision: ${M62_COMMIT}
+          Specific device information: [Supported List](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/Supported_list.md).
 
-          ### Downloads
+          The KernelSU version is for reference only. It is normal for the KernelSU version embedded in SuSFS to be lower.
 
-          - **ExtremeKRNL-Unified-Package** — Standard SuSFS kernel
-          - **ExtremeKRNL-Droidspaces-non-GKI-Package** — Droidspaces-enabled non-GKI kernel
+          - KernelSU-ReSukiSU Version: ${KSU_RESUKISU_VERSION}
+          - KernelSU-ReSukiSU Commit: ${KSU_RESUKISU_COMMIT}
+          - SuSFS Version: ${SUSFS_VERSION}
+          - M62-backport Commit: ${M62_COMMIT}
 
-          Both packages support S10e, S10, S10+, S10 5G, Note10, Note10 5G, Note10+ and Note10+ 5G. Confirm your device model before flashing.
+          This release contains two kernel variants:
+
+          - **Standard-SuSFS** — the standard SuSFS kernel for all supported devices.
+          - **Droidspaces-SuSFS** — the SuSFS kernel with Droidspaces non-GKI support.
+
+          Both variants cover S10e, S10, S10 5G, S10+, Note10, Note10 5G, Note10+ and Note10+ 5G. Check the device codename and regional compatibility in Supported List before flashing.
           EOF
           find release-assets -type f -name '*.zip' -print
 
@@ -301,5 +318,6 @@ jobs:
           tag_name: ${{ steps.metadata.outputs.tag }}
           name: ${{ steps.metadata.outputs.name }}
           body_path: release-notes.md
-          files: release-assets/**/*.zip
+          files: |
+            release-assets/**/*.zip
           fail_on_unmatched_files: true
