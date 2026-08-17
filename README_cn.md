@@ -35,7 +35,7 @@
 - [x] **全系列双变体**：一次手动触发分别构建标准 SuSFS 内核与 Droidspaces SuSFS 内核；每个作业均覆盖全部九个 S10/Note10 设备。
 - [x] **源码固定**：始终从 `Star-Seven/M62-backport` 的默认 `bpf111` 分支检出源码与子模块。
 - [x] **原生统一打包**：两个作业均通过上游 `build.sh --model all` 使用 Android 16 参数和统一镜像归档生成安装 ZIP。
-- [x] **内核功能**：构建时接入 ReSukiSU、SuSFS 2.2 后移植与管理器查询接口；Droidspaces 作业额外应用上游 non-GKI 补丁和 `droidspaces.config`。
+- [x] **内核功能**：构建时接入 ReSukiSU、SuSFS 2.2 后移植与管理器查询接口；ReSukiSU 内置多管理器签名兼容机制，使 Official KernelSU、RKSU、MKSU 与 SukiSU-Ultra 管理器可在同一内核中共存；Droidspaces 作业额外应用上游 non-GKI 补丁和 `droidspaces.config`。
 - [x] **运行环境**：GitHub Actions Ubuntu 24.04，ARM64 内核交叉编译。
     
 ---
