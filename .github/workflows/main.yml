@@ -22,7 +22,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
@@ -38,6 +38,12 @@ jobs:
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
           git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
           ln -s ../KernelSU/kernel drivers/kernelsu
+          test -f KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_OFFICIAL' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_5EC1CFF' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_RSUNTK' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_SUKISU' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_RESUKISU' KernelSU/kernel/manager/manager_sign.h
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -95,10 +101,11 @@ jobs:
       - name: "💫Prepare Standard SuSFS ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
+          KERNEL_PACKAGE_NAME=$(grep -o 'CONFIG_LOCALVERSION="[^\"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2 | sed 's/^-//' | tr -cs 'A-Za-z0-9._-' '-' | sed 's/-$//')
+          test -n "$KERNEL_PACKAGE_NAME"
           for package in kernel/build/*.zip; do
             test -f "$package"
-            base=$(basename "${package%.zip}")
-            cp "$package" "$GITHUB_WORKSPACE/upload/${base}-Standard-SuSFS.zip"
+            cp "$package" "$GITHUB_WORKSPACE/upload/${KERNEL_PACKAGE_NAME}.zip"
           done
           echo "=== Standard SuSFS package ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
@@ -118,7 +125,7 @@ jobs:
           EOF
 
       - name: "😎Upload Unified ZIP as artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: "M62-S10-Note10-Standard-SuSFS"
           path: |
@@ -142,7 +149,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
@@ -158,6 +165,12 @@ jobs:
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
           git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
           ln -s ../KernelSU/kernel drivers/kernelsu
+          test -f KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_OFFICIAL' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_5EC1CFF' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_RSUNTK' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_SUKISU' KernelSU/kernel/manager/manager_sign.h
+          grep -q 'EXPECTED_HASH_RESUKISU' KernelSU/kernel/manager/manager_sign.h
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -234,10 +247,11 @@ jobs:
       - name: "💫Prepare Droidspaces SuSFS ZIP for upload"
         run: |
           mkdir -p "$GITHUB_WORKSPACE/upload"
+          KERNEL_PACKAGE_NAME=$(grep -o 'CONFIG_LOCALVERSION="[^\"]*"' kernel/arch/arm64/configs/exynos9820_defconfig | cut -d '"' -f 2 | sed 's/^-//' | tr -cs 'A-Za-z0-9._-' '-' | sed 's/-$//')
+          test -n "$KERNEL_PACKAGE_NAME"
           for package in kernel/build/*.zip; do
             test -f "$package"
-            base=$(basename "${package%.zip}")
-            cp "$package" "$GITHUB_WORKSPACE/upload/${base}-Droidspaces-SuSFS.zip"
+            cp "$package" "$GITHUB_WORKSPACE/upload/${KERNEL_PACKAGE_NAME}-Droidspaces.zip"
           done
           echo "=== Droidspaces SuSFS package ==="
           ls -la "$GITHUB_WORKSPACE/upload/"
@@ -257,7 +271,7 @@ jobs:
           EOF
 
       - name: "😎Upload Droidspaces ZIP as artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: "M62-S10-Note10-Droidspaces-SuSFS"
           path: |
@@ -272,9 +286,34 @@ jobs:
     needs: [build, build-droidspaces]
     steps:
       - name: "💫Download kernel packages"
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           path: release-assets
+
+      - name: "🔎Collect KernelSU manager reference versions"
+        run: |
+          set -e
+          mkdir -p manager-refs
+          git clone --depth=1 --branch master https://github.com/backslashxx/KernelSU.git manager-refs/KernelSU-xxksu
+          git clone --depth=1 --branch main https://github.com/rsuntk/KernelSU.git manager-refs/KernelSU-rsuntk
+          git clone --depth=1 --branch builtin https://github.com/ShirkNeko/SukiSU-Ultra.git manager-refs/KernelSU-SukiSU-Ultra
+          git clone --depth=1 --branch legacy https://github.com/KernelSU-Next/KernelSU-Next.git manager-refs/KernelSU-Next
+          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git manager-refs/KernelSU-ReSukiSU
+          git clone --depth=1 --branch main https://github.com/cctv18/ReSukiSU_CI.git manager-refs/KernelSU-ReSukiSU-CI
+          KSU_XXKSU_VERSION=$(expr $(git -C manager-refs/KernelSU-xxksu rev-list --count HEAD) + 10200 - 32)
+          KSU_RSUNTK_VERSION=$(expr $(git -C manager-refs/KernelSU-rsuntk rev-list --count HEAD) + 10200)
+          KSU_SUKISU_ULTRA_VERSION=$(expr $(git -C manager-refs/KernelSU-SukiSU-Ultra rev-list --count HEAD) + 10200)
+          KSU_NEXT_VERSION=$(expr $(git -C manager-refs/KernelSU-Next rev-list --count HEAD) + 10200)
+          KSU_RESUKISU_VERSION=$(expr $(git -C manager-refs/KernelSU-ReSukiSU rev-list --count HEAD) + 10200)
+          KSU_RESUKISU_CI_VERSION=$(expr $(git -C manager-refs/KernelSU-ReSukiSU-CI rev-list --count HEAD) + 10200)
+          cat > manager-versions.env <<EOF
+          KSU_XXKSU_VERSION=${KSU_XXKSU_VERSION}
+          KSU_RSUNTK_VERSION=${KSU_RSUNTK_VERSION}
+          KSU_SUKISU_ULTRA_VERSION=${KSU_SUKISU_ULTRA_VERSION}
+          KSU_NEXT_VERSION=${KSU_NEXT_VERSION}
+          KSU_RESUKISU_VERSION=${KSU_RESUKISU_VERSION}
+          KSU_RESUKISU_CI_VERSION=${KSU_RESUKISU_CI_VERSION}
+          EOF
 
       - name: "📝Generate release notes"
         id: metadata
@@ -283,6 +322,9 @@ jobs:
           test -n "$METADATA_FILE"
           set -a
           . "$METADATA_FILE"
+          set +a
+          set -a
+          . manager-versions.env
           set +a
           TAG_KSU_VERSION=$(printf '%s' "$KSU_RESUKISU_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
           TAG_SUSFS_VERSION=$(printf '%s' "$SUSFS_VERSION" | tr -cs 'A-Za-z0-9._-' '-')
@@ -298,7 +340,16 @@ jobs:
 
           The KernelSU version is for reference only. It is normal for the KernelSU version embedded in SuSFS to be lower.
 
-          - KernelSU-ReSukiSU Version: [${KSU_RESUKISU_VERSION}](https://github.com/ReSukiSU/ReSukiSU)
+          The generated kernels embed [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU). Its built-in multi-manager signature compatibility supports the Official KernelSU, [RKSU](https://github.com/rsuntk/KernelSU), [MKSU](https://github.com/5ec1cff/KernelSU) and [SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra) managers in one kernel.
+
+          The following KernelSU manager versions are provided as dynamically collected reference information:
+
+          - [KernelSU-xxksu](https://github.com/backslashxx/KernelSU) Version: ${KSU_XXKSU_VERSION}
+          - [KernelSU-rsuntk](https://github.com/rsuntk/KernelSU) Version: ${KSU_RSUNTK_VERSION}
+          - [KernelSU-SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra) Version: ${KSU_SUKISU_ULTRA_VERSION}
+          - [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next) Version: ${KSU_NEXT_VERSION}
+          - [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) Version: ${KSU_RESUKISU_VERSION}
+          - [KernelSU-ReSukiSU-CI](https://github.com/cctv18/ReSukiSU_CI) Version: ${KSU_RESUKISU_CI_VERSION}
           - KernelSU-ReSukiSU Commit: [${KSU_RESUKISU_COMMIT}](https://github.com/ReSukiSU/ReSukiSU/commit/${KSU_RESUKISU_COMMIT})
           - SuSFS Version: [${SUSFS_VERSION}](https://github.com/Star-Seven/M62-backport/tree/bpf111)
           - M62-backport Commit: [${M62_COMMIT}](https://github.com/Star-Seven/M62-backport/commit/${M62_COMMIT})
@@ -313,7 +364,7 @@ jobs:
           find release-assets -type f -name '*.zip' -print
 
       - name: "🚀Create GitHub Release"
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.metadata.outputs.tag }}
           name: ${{ steps.metadata.outputs.name }}
