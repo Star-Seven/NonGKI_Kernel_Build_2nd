@@ -128,7 +128,7 @@ jobs:
           retention-days: 14
 
   build-droidspaces:
-    name: Build Droidspaces non-GKI Kernel
+    name: Build Droidspaces Kernel
     runs-on: ubuntu-24.04
     steps:
       - name: "⏰Set Time Zone to Beijing"
@@ -298,15 +298,15 @@ jobs:
 
           The KernelSU version is for reference only. It is normal for the KernelSU version embedded in SuSFS to be lower.
 
-          - KernelSU-ReSukiSU Version: ${KSU_RESUKISU_VERSION}
-          - KernelSU-ReSukiSU Commit: ${KSU_RESUKISU_COMMIT}
-          - SuSFS Version: ${SUSFS_VERSION}
-          - M62-backport Commit: ${M62_COMMIT}
+          - KernelSU-ReSukiSU Version: [${KSU_RESUKISU_VERSION}](https://github.com/ReSukiSU/ReSukiSU)
+          - KernelSU-ReSukiSU Commit: [${KSU_RESUKISU_COMMIT}](https://github.com/ReSukiSU/ReSukiSU/commit/${KSU_RESUKISU_COMMIT})
+          - SuSFS Version: [${SUSFS_VERSION}](https://github.com/Star-Seven/M62-backport/tree/bpf111)
+          - M62-backport Commit: [${M62_COMMIT}](https://github.com/Star-Seven/M62-backport/commit/${M62_COMMIT})
 
           This release contains two kernel variants:
 
           - **Standard-SuSFS** — the standard SuSFS kernel for all supported devices.
-          - **Droidspaces-SuSFS** — the SuSFS kernel with Droidspaces non-GKI support.
+          - **Droidspaces-SuSFS** — the SuSFS kernel with Droidspaces support for all supported devices.
 
           Both variants cover S10e, S10, S10 5G, S10+, Note10, Note10 5G, Note10+ and Note10+ 5G. Check the device codename and regional compatibility in Supported List before flashing.
           EOF
