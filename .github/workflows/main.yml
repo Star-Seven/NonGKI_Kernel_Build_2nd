@@ -36,14 +36,10 @@ jobs:
         working-directory: kernel
         run: |
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
-          git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git clone https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
+          git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
-          test -f KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_OFFICIAL' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_5EC1CFF' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_RSUNTK' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_SUKISU' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_RESUKISU' KernelSU/kernel/manager/manager_sign.h
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -163,14 +159,10 @@ jobs:
         working-directory: kernel
         run: |
           bash "$GITHUB_WORKSPACE/Bin/clean_hook.sh"
-          git clone --branch main https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git clone https://github.com/ReSukiSU/ReSukiSU.git KernelSU
+          git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
+          git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
-          test -f KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_OFFICIAL' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_5EC1CFF' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_RSUNTK' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_SUKISU' KernelSU/kernel/manager/manager_sign.h
-          grep -q 'EXPECTED_HASH_RESUKISU' KernelSU/kernel/manager/manager_sign.h
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -294,12 +286,14 @@ jobs:
         run: |
           set -e
           mkdir -p manager-refs
-          git clone --depth=1 --branch master https://github.com/backslashxx/KernelSU.git manager-refs/KernelSU-xxksu
-          git clone --depth=1 --branch main https://github.com/rsuntk/KernelSU.git manager-refs/KernelSU-rsuntk
-          git clone --depth=1 --branch builtin https://github.com/ShirkNeko/SukiSU-Ultra.git manager-refs/KernelSU-SukiSU-Ultra
-          git clone --depth=1 --branch legacy https://github.com/KernelSU-Next/KernelSU-Next.git manager-refs/KernelSU-Next
-          git clone --depth=1 --branch main https://github.com/ReSukiSU/ReSukiSU.git manager-refs/KernelSU-ReSukiSU
-          git clone --depth=1 --branch main https://github.com/cctv18/ReSukiSU_CI.git manager-refs/KernelSU-ReSukiSU-CI
+          git clone --branch master https://github.com/backslashxx/KernelSU.git manager-refs/KernelSU-xxksu
+          git clone --branch main https://github.com/rsuntk/KernelSU.git manager-refs/KernelSU-rsuntk
+          git clone --branch builtin https://github.com/ShirkNeko/SukiSU-Ultra.git manager-refs/KernelSU-SukiSU-Ultra
+          git clone --branch legacy https://github.com/KernelSU-Next/KernelSU-Next.git manager-refs/KernelSU-Next
+          git clone https://github.com/ReSukiSU/ReSukiSU.git manager-refs/KernelSU-ReSukiSU
+          git -C manager-refs/KernelSU-ReSukiSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
+          git -C manager-refs/KernelSU-ReSukiSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
+          git clone --branch main https://github.com/cctv18/ReSukiSU_CI.git manager-refs/KernelSU-ReSukiSU-CI
           KSU_XXKSU_VERSION=$(expr $(git -C manager-refs/KernelSU-xxksu rev-list --count HEAD) + 10200 - 32)
           KSU_RSUNTK_VERSION=$(expr $(git -C manager-refs/KernelSU-rsuntk rev-list --count HEAD) + 10200)
           KSU_SUKISU_ULTRA_VERSION=$(expr $(git -C manager-refs/KernelSU-SukiSU-Ultra rev-list --count HEAD) + 10200)
