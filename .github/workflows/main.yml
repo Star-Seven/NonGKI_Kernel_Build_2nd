@@ -40,6 +40,10 @@ jobs:
           git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
+          if ! grep -q 'EXPECTED_HASH_NEXT' KernelSU/kernel/manager/manager_sign.h; then
+            sed -i '/^\\/\\/ KOWX712\\/KernelSU/i\\// KernelSU-Next\n#define EXPECTED_SIZE_NEXT 0x3e6\n#define EXPECTED_HASH_NEXT "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"' KernelSU/kernel/manager/manager_sign.h
+            sed -i '/{ EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 }/a\    { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // KernelSU-Next' KernelSU/kernel/manager/apk_sign.c
+          fi
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -66,8 +70,11 @@ jobs:
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
           grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          grep -q 'EXPECTED_HASH_NEXT' drivers/kernelsu/manager/manager_sign.h
+          grep -q 'EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT' drivers/kernelsu/manager/apk_sign.c
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
+          CONFIG_KSU_MULTI_MANAGER_SUPPORT=y
           CONFIG_KSU_SUSFS=y
           CONFIG_KSU_SUSFS_SUS_PATH=y
           CONFIG_KSU_SUSFS_SUS_MOUNT=y
@@ -163,6 +170,10 @@ jobs:
           git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
+          if ! grep -q 'EXPECTED_HASH_NEXT' KernelSU/kernel/manager/manager_sign.h; then
+            sed -i '/^\\/\\/ KOWX712\\/KernelSU/i\\// KernelSU-Next\n#define EXPECTED_SIZE_NEXT 0x3e6\n#define EXPECTED_HASH_NEXT "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"' KernelSU/kernel/manager/manager_sign.h
+            sed -i '/{ EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 }/a\    { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // KernelSU-Next' KernelSU/kernel/manager/apk_sign.c
+          fi
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -189,8 +200,11 @@ jobs:
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
           grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          grep -q 'EXPECTED_HASH_NEXT' drivers/kernelsu/manager/manager_sign.h
+          grep -q 'EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT' drivers/kernelsu/manager/apk_sign.c
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
+          CONFIG_KSU_MULTI_MANAGER_SUPPORT=y
           CONFIG_KSU_SUSFS=y
           CONFIG_KSU_SUSFS_SUS_PATH=y
           CONFIG_KSU_SUSFS_SUS_MOUNT=y
@@ -334,7 +348,7 @@ jobs:
 
           The KernelSU version is for reference only. It is normal for the KernelSU version embedded in SuSFS to be lower.
 
-          The generated kernels embed [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU). Its built-in multi-manager signature compatibility supports the Official KernelSU, [RKSU](https://github.com/rsuntk/KernelSU), [MKSU](https://github.com/5ec1cff/KernelSU) and [SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra) managers in one kernel.
+          The generated kernels embed [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU). Its multi-manager compatibility supports Official KernelSU/xxksu, [RKSU](https://github.com/rsuntk/KernelSU), [MKSU](https://github.com/5ec1cff/KernelSU), [SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra), and [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next) managers in one kernel.
 
           The following KernelSU manager versions are provided as dynamically collected reference information:
 
