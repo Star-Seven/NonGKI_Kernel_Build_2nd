@@ -45,7 +45,7 @@ jobs:
               /^\/\/ KOWX712\/KernelSU$/ && !inserted {
                 print "// KernelSU-Next"
                 print "#define EXPECTED_SIZE_NEXT 0x3e6"
-                print "#define EXPECTED_HASH_NEXT \\\"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\\\""
+                print "#define EXPECTED_HASH_NEXT \"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\""
                 inserted = 1
               }
               { print }
@@ -193,7 +193,7 @@ jobs:
               /^\/\/ KOWX712\/KernelSU$/ && !inserted {
                 print "// KernelSU-Next"
                 print "#define EXPECTED_SIZE_NEXT 0x3e6"
-                print "#define EXPECTED_HASH_NEXT \\\"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\\\""
+                print "#define EXPECTED_HASH_NEXT \"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\""
                 inserted = 1
               }
               { print }
