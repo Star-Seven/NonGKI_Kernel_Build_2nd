@@ -4,7 +4,7 @@
   English | <a href="README_cn.md">中文说明</a> | <a href="Supported_list.md">Supported List</a> | <a href="https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd/wiki">Wiki</a> | <a href="https://t.me/+9XqfxcDtpkM2ZGE1">Telegram Group</a>
 </p>
 <p align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-samsung-s10-note10-series.yml?branch=mainline&style=for-the-badge">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/Star-Seven/NonGKI_Kernel_Build_2nd/main.yml?branch=mainline&style=for-the-badge">
  <img alt="GitHub License" src="https://img.shields.io/github/license/JackA1ltman/NonGKI_Kernel_Build_2nd?style=for-the-badge">
 </p>
 
@@ -38,7 +38,7 @@ This local streamlined version provides unified Non-GKI kernel builds for the Sa
 - [x] **Two all-series variants:** one manual run builds a standard SuSFS kernel and a Droidspaces SuSFS kernel; each job covers all nine S10/Note10 devices.
 - [x] **Source alignment:** source and submodules always come from the default `bpf111` branch of `Star-Seven/M62-backport`.
 - [x] **Native unified packaging:** both jobs run the upstream `build.sh --model all` flow with Android 16 parameters and its unified image archive.
-- [x] **Kernel features:** the builds set up ReSukiSU, the SuSFS 2.2 backport, and manager query interfaces; ReSukiSU's built-in multi-manager signature compatibility allows Official KernelSU, RKSU, MKSU, and SukiSU-Ultra managers to coexist in one kernel; the Droidspaces variant additionally applies upstream non-GKI patches and `droidspaces.config`.
+- [x] **Kernel features:** the builds set up ReSukiSU 14574, the SuSFS 2.2 backport, and manager query interfaces; the generated kernel integrates ReSukiSU only. The Droidspaces variant additionally applies upstream non-GKI patches and `droidspaces.config`.
 - [x] **Build environment:** GitHub Actions Ubuntu 24.04 with ARM64 cross-compilation.
 
 ---
@@ -62,7 +62,6 @@ This local streamlined version provides unified Non-GKI kernel builds for the Sa
   - [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) - @ShirkNeko
     - [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) - @ReSukiSU Development
       - [ReSukiSU_CI](https://github.com/cctv18/ReSukiSU_CI) - @cctv18
-  - [Next](https://github.com/KernelSU-Next/KernelSU-Next) - @rifsxd
 - [SuSFS](https://gitlab.com/simonpunk/susfs4ksu) - @simonpunk
 - [Re:Kernel](https://github.com/Sakion-Team/Re-Kernel) - @Sakion-Team
 - [Baseband Guard](https://github.com/vc-teahouse/Baseband-guard) - @秋刀鱼

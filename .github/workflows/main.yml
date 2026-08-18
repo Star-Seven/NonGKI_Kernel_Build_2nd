@@ -40,28 +40,6 @@ jobs:
           git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
-          if ! grep -q 'EXPECTED_HASH_NEXT' KernelSU/kernel/manager/manager_sign.h; then
-            awk '
-              /^\/\/ KOWX712\/KernelSU$/ && !inserted {
-                print "// KernelSU-Next"
-                print "#define EXPECTED_SIZE_NEXT 0x3e6"
-                print "#define EXPECTED_HASH_NEXT \"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\""
-                inserted = 1
-              }
-              { print }
-            ' KernelSU/kernel/manager/manager_sign.h > KernelSU/kernel/manager/manager_sign.h.tmp
-            mv KernelSU/kernel/manager/manager_sign.h.tmp KernelSU/kernel/manager/manager_sign.h
-            awk '
-              /\{ EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 \}/ && !inserted {
-                print
-                print "    { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // KernelSU-Next"
-                inserted = 1
-                next
-              }
-              { print }
-            ' KernelSU/kernel/manager/apk_sign.c > KernelSU/kernel/manager/apk_sign.c.tmp
-            mv KernelSU/kernel/manager/apk_sign.c.tmp KernelSU/kernel/manager/apk_sign.c
-          fi
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -88,11 +66,8 @@ jobs:
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
           grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
-          grep -q 'EXPECTED_HASH_NEXT' drivers/kernelsu/manager/manager_sign.h
-          grep -q 'EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT' drivers/kernelsu/manager/apk_sign.c
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
-          CONFIG_KSU_MULTI_MANAGER_SUPPORT=y
           CONFIG_KSU_SUSFS=y
           CONFIG_KSU_SUSFS_SUS_PATH=y
           CONFIG_KSU_SUSFS_SUS_MOUNT=y
@@ -188,28 +163,6 @@ jobs:
           git -C KernelSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           git -C KernelSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           ln -s ../KernelSU/kernel drivers/kernelsu
-          if ! grep -q 'EXPECTED_HASH_NEXT' KernelSU/kernel/manager/manager_sign.h; then
-            awk '
-              /^\/\/ KOWX712\/KernelSU$/ && !inserted {
-                print "// KernelSU-Next"
-                print "#define EXPECTED_SIZE_NEXT 0x3e6"
-                print "#define EXPECTED_HASH_NEXT \"79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7\""
-                inserted = 1
-              }
-              { print }
-            ' KernelSU/kernel/manager/manager_sign.h > KernelSU/kernel/manager/manager_sign.h.tmp
-            mv KernelSU/kernel/manager/manager_sign.h.tmp KernelSU/kernel/manager/manager_sign.h
-            awk '
-              /\{ EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 \}/ && !inserted {
-                print
-                print "    { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // KernelSU-Next"
-                inserted = 1
-                next
-              }
-              { print }
-            ' KernelSU/kernel/manager/apk_sign.c > KernelSU/kernel/manager/apk_sign.c.tmp
-            mv KernelSU/kernel/manager/apk_sign.c.tmp KernelSU/kernel/manager/apk_sign.c
-          fi
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i\source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           patch -p1 < "$GITHUB_WORKSPACE/Patches/Patch/susfs_patch_to_4.14.patch" || true
@@ -236,11 +189,8 @@ jobs:
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
           grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
-          grep -q 'EXPECTED_HASH_NEXT' drivers/kernelsu/manager/manager_sign.h
-          grep -q 'EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT' drivers/kernelsu/manager/apk_sign.c
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
-          CONFIG_KSU_MULTI_MANAGER_SUPPORT=y
           CONFIG_KSU_SUSFS=y
           CONFIG_KSU_SUSFS_SUS_PATH=y
           CONFIG_KSU_SUSFS_SUS_MOUNT=y
@@ -339,7 +289,6 @@ jobs:
           git clone --branch master https://github.com/backslashxx/KernelSU.git manager-refs/KernelSU-xxksu
           git clone --branch main https://github.com/rsuntk/KernelSU.git manager-refs/KernelSU-rsuntk
           git clone --branch builtin https://github.com/ShirkNeko/SukiSU-Ultra.git manager-refs/KernelSU-SukiSU-Ultra
-          git clone --branch legacy https://github.com/KernelSU-Next/KernelSU-Next.git manager-refs/KernelSU-Next
           git clone https://github.com/ReSukiSU/ReSukiSU.git manager-refs/KernelSU-ReSukiSU
           git -C manager-refs/KernelSU-ReSukiSU fetch origin 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
           git -C manager-refs/KernelSU-ReSukiSU checkout --detach 8e2b9945b4f8cf54c49bd5d87c0c802ed10d8ccb
@@ -347,14 +296,12 @@ jobs:
           KSU_XXKSU_VERSION=$(expr $(git -C manager-refs/KernelSU-xxksu rev-list --count HEAD) + 10200 - 32)
           KSU_RSUNTK_VERSION=$(expr $(git -C manager-refs/KernelSU-rsuntk rev-list --count HEAD) + 10200)
           KSU_SUKISU_ULTRA_VERSION=$(expr $(git -C manager-refs/KernelSU-SukiSU-Ultra rev-list --count HEAD) + 10200)
-          KSU_NEXT_VERSION=$(expr $(git -C manager-refs/KernelSU-Next rev-list --count HEAD) + 10200)
           KSU_RESUKISU_VERSION=$(expr $(git -C manager-refs/KernelSU-ReSukiSU rev-list --count HEAD) + 10200)
           KSU_RESUKISU_CI_VERSION=$(expr $(git -C manager-refs/KernelSU-ReSukiSU-CI rev-list --count HEAD) + 10200)
           cat > manager-versions.env <<EOF
           KSU_XXKSU_VERSION=${KSU_XXKSU_VERSION}
           KSU_RSUNTK_VERSION=${KSU_RSUNTK_VERSION}
           KSU_SUKISU_ULTRA_VERSION=${KSU_SUKISU_ULTRA_VERSION}
-          KSU_NEXT_VERSION=${KSU_NEXT_VERSION}
           KSU_RESUKISU_VERSION=${KSU_RESUKISU_VERSION}
           KSU_RESUKISU_CI_VERSION=${KSU_RESUKISU_CI_VERSION}
           EOF
@@ -384,14 +331,13 @@ jobs:
 
           The KernelSU version is for reference only. It is normal for the KernelSU version embedded in SuSFS to be lower.
 
-          The generated kernels embed [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU). Its multi-manager compatibility supports Official KernelSU/xxksu, [RKSU](https://github.com/rsuntk/KernelSU), [MKSU](https://github.com/5ec1cff/KernelSU), [SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra), and [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next) managers in one kernel.
+          The generated kernels embed [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) version ${KSU_RESUKISU_VERSION}. Other KernelSU versions listed below are reference information only and do not indicate that those managers are embedded or supported by the generated kernel.
 
           The following KernelSU manager versions are provided as dynamically collected reference information:
 
           - [KernelSU-xxksu](https://github.com/backslashxx/KernelSU) Version: ${KSU_XXKSU_VERSION}
           - [KernelSU-rsuntk](https://github.com/rsuntk/KernelSU) Version: ${KSU_RSUNTK_VERSION}
           - [KernelSU-SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra) Version: ${KSU_SUKISU_ULTRA_VERSION}
-          - [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next) Version: ${KSU_NEXT_VERSION}
           - [KernelSU-ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) Version: ${KSU_RESUKISU_VERSION}
           - [KernelSU-ReSukiSU-CI](https://github.com/cctv18/ReSukiSU_CI) Version: ${KSU_RESUKISU_CI_VERSION}
           - KernelSU-ReSukiSU Commit: [${KSU_RESUKISU_COMMIT}](https://github.com/ReSukiSU/ReSukiSU/commit/${KSU_RESUKISU_COMMIT})

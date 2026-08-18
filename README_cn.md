@@ -4,7 +4,7 @@
   <a href="README.md">English</a> | 中文说明 | <a href="Supported_list.md">支持列表</a> | <a href="https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd/wiki">Wiki</a> | <a href="https://t.me/+9XqfxcDtpkM2ZGE1">Telegram 群组</a>
 </p>
 <p align="center">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JackA1ltman/NonGKI_Kernel_Build_2nd/build-samsung-s10-note10-series.yml?branch=mainline&style=for-the-badge">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/Star-Seven/NonGKI_Kernel_Build_2nd/main.yml?branch=mainline&style=for-the-badge">
  <img alt="GitHub License" src="https://img.shields.io/github/license/JackA1ltman/NonGKI_Kernel_Build_2nd?style=for-the-badge">
 </p>
 
@@ -35,7 +35,7 @@
 - [x] **全系列双变体**：一次手动触发分别构建标准 SuSFS 内核与 Droidspaces SuSFS 内核；每个作业均覆盖全部九个 S10/Note10 设备。
 - [x] **源码固定**：始终从 `Star-Seven/M62-backport` 的默认 `bpf111` 分支检出源码与子模块。
 - [x] **原生统一打包**：两个作业均通过上游 `build.sh --model all` 使用 Android 16 参数和统一镜像归档生成安装 ZIP。
-- [x] **内核功能**：构建时接入 ReSukiSU、SuSFS 2.2 后移植与管理器查询接口；ReSukiSU 内置多管理器签名兼容机制，使 Official KernelSU、RKSU、MKSU 与 SukiSU-Ultra 管理器可在同一内核中共存；Droidspaces 作业额外应用上游 non-GKI 补丁和 `droidspaces.config`。
+- [x] **内核功能**：构建时接入 ReSukiSU 14574、SuSFS 2.2 后移植与管理器查询接口；生成的内核实际仅集成 ReSukiSU。Droidspaces 作业额外应用上游 non-GKI 补丁和 `droidspaces.config`。
 - [x] **运行环境**：GitHub Actions Ubuntu 24.04，ARM64 内核交叉编译。
     
 ---
@@ -59,7 +59,6 @@
     - [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) - @ShirkNeko
         - [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) - @ReSukiSU Development
             - [ReSukiSU_CI](https://github.com/cctv18/ReSukiSU_CI) - @cctv18
-    - [Next](https://github.com/KernelSU-Next/KernelSU-Next) - @rifsxd
 - [SuSFS](https://gitlab.com/simonpunk/susfs4ksu) - @simonpunk
 - [Re:Kernel](https://github.com/Sakion-Team/Re-Kernel) - @Sakion-Team
 - [Baseband Guard](https://github.com/vc-teahouse/Baseband-guard) - @秋刀鱼

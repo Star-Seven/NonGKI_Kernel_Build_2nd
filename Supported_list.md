@@ -18,7 +18,7 @@
 
 ## 构建方式
 
-在 GitHub Actions 中手动运行 **Build Samsung S10 / Note10 Series Kernels**。该工作流提供两个全系列作业：标准 SuSFS 内核和 Droidspaces SuSFS 内核。两者均拉取 M62-backport 默认 `bpf111` 分支、初始化子模块、接入 ReSukiSU/SuSFS，并执行 `./build.sh --model all --ksu y --recovery n`。构建完成后，可分别下载两个作业生成的全系列 ZIP 文件。
+在 GitHub Actions 中手动运行 **Build and Release**。该工作流提供两个全系列作业：标准 SuSFS 内核和 Droidspaces SuSFS 内核。两者均拉取 M62-backport 默认 `bpf111` 分支、初始化子模块、接入 ReSukiSU/SuSFS，并执行 `./build.sh --model all --ksu y --recovery n`。构建完成后，可分别下载两个作业生成的全系列 ZIP 文件。
 
 ## 参考资料
 
