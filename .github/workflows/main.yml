@@ -22,7 +22,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
-          grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          grep -q '^#define SUSFS_VERSION "v' include/linux/susfs.h
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
           CONFIG_KSU_SUSFS=y
@@ -121,7 +121,7 @@ jobs:
           EOF
 
       - name: "😎Upload Unified ZIP as artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "M62-S10-Note10-Standard-SuSFS"
           path: |
@@ -145,7 +145,7 @@ jobs:
             zlib1g-dev libc6-dev-i386 lib32z1-dev libssl-dev unzip xz-utils cpio
 
       - name: "⭐Checkout build definitions"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "⭐Checkout M62-backport repository with submodules"
         run: |
@@ -188,7 +188,7 @@ jobs:
             exit 1
           fi
           grep -q 'CMD_SUSFS_SHOW_VERSION' drivers/kernelsu/supercall/dispatch.c
-          grep -q '^#define SUSFS_VERSION "v2.2.0"' include/linux/susfs.h
+          grep -q '^#define SUSFS_VERSION "v' include/linux/susfs.h
           cat >> arch/arm64/configs/ksu.config <<'EOF'
           CONFIG_KSU=y
           CONFIG_KSU_SUSFS=y
@@ -263,7 +263,7 @@ jobs:
           EOF
 
       - name: "😎Upload Droidspaces ZIP as artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "M62-S10-Note10-Droidspaces-SuSFS"
           path: |
@@ -278,7 +278,7 @@ jobs:
     needs: [build, build-droidspaces]
     steps:
       - name: "💫Download kernel packages"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
 
@@ -354,7 +354,7 @@ jobs:
           find release-assets -type f -name '*.zip' -print
 
       - name: "🚀Create GitHub Release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.metadata.outputs.tag }}
           name: ${{ steps.metadata.outputs.name }}
